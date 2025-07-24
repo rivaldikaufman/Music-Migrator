@@ -12,8 +12,8 @@ import time
 
 # AUTHENTIKASI SPOTIFY
 auth = SpotifyOAuth(
-    client_id="9c4668ad05594b9e9dd1eccdea160fd7",
-    client_secret="70ed147ff8c54ce7b3b834036cc8f149",
+    client_id="your_client_id_here",
+    client_secret="your_secret_here",
     redirect_uri="http://127.0.0.1:8888/callback",
     scope="playlist-modify-public user-library-read user-library-modify"
 )
