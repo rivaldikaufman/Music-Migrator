@@ -8,7 +8,7 @@ Terakhir diperbarui: 2025-07-24
 ## 🔥 Tujuan
 
 <p align="center">
-  <img src="https://i.imgur.com/TCUyAdf.png" alt="Preview Migrator" width="600"/>
+  <img src="SCREENSHOTS/MIGRATOR.jpeg" alt="Migrator Preview" width="600"/>
 </p>
 
 Migrasi semua lagu dari Apple Music ke Spotify *tanpa third-party tool* seperti SongShift. Cukup dengan Python dan API Spotify.
