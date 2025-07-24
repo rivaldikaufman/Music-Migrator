@@ -13,25 +13,87 @@ Migrasi semua lagu dari Apple Music ke Spotify *tanpa third-party tool* seperti 
 
 ## 📦 Tools & Library
 
-* Python 3.13 (pakai virtual environment disarankan)
-* [Spotipy](https://spotipy.readthedocs.io/) (Python library untuk Spotify Web API)
+* Python 3.13 (gunakan virtual environment)
+* [Spotipy](https://spotipy.readthedocs.io/) (library Spotify Web API)
 * Apple Music (playlist diekspor manual)
-* File `playlist.txt` hasil parsing dari Apple Music XML
+* `playlisttotxt.py` untuk parsing XML Apple Music
+* `migrator.py` untuk transfer lagu ke Spotify
+
+---
+
+## 🧰 Setup Awal dengan `initpyenv.sh`
+
+Jalankan script berikut untuk setup environment otomatis:
+
+```bash
+chmod +x initpyenv.sh
+./initpyenv.sh
+```
+
+Script ini akan:
+
+* Membuat virtual environment
+* Install dependensi: `spotipy`, `requests`
+* Aktifkan environment otomatis
 
 ---
 
 ## 🧠 Alur Migrasi
 
-1. Ekspor playlist dari Apple Music → jadi file teks
-2. Buka file itu dan baca semua baris lagu (format: `Artist - Title`)
-3. Gunakan Spotify API:
+1. **Ekspor Playlist Apple Music (Mac):**
 
-   * Cek apakah lagu sudah ada di "Liked Songs"
-   * Jika belum, tambahkan
-   * Jika gagal cari, coba fuzzy search
-   * Jika tetap gagal, log ke `gagal.txt`
-   * Jika sudah ada, log ke `skipped.txt`
-4. Setelah selesai, buka otomatis halaman Liked Songs di browser
+   * Buka `Music.app`
+   * Klik playlist → File > Library > Export Playlist → pilih XML
+
+2. **Jalankan `playlisttotxt.py`:**
+
+   ```bash
+   python3 playlisttotxt.py path/to/exported_playlist.xml
+   ```
+
+   Output: `playlist.txt`
+
+3. **Jalankan `migrator.py` untuk transfer lagu ke Spotify**
+
+   ```bash
+   python3 migrator.py
+   ```
+
+   Script akan:
+
+   * Tambahkan lagu ke "Liked Songs"
+   * Lewati lagu yang sudah ada
+   * Catat lagu gagal di `gagal.txt`
+   * Catat yang sudah ada di `skipped.txt`
+
+---
+
+## 🎫 Tentang Spotify Client ID & Secret
+
+Untuk menggunakan script ini, kamu **wajib memiliki akses ke Spotify Developer Console** agar bisa menggunakan API mereka.
+
+Langkahnya:
+
+1. Kunjungi: [https://developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
+2. Login dengan akun Spotify kamu
+3. Klik **Create App** → beri nama dan deskripsi
+4. Setelah dibuat, kamu akan mendapatkan:
+
+   * **Client ID**
+   * **Client Secret**
+
+⚠️ **Masukkan kedua nilai tersebut ke dalam file `migrator.py` secara manual**:
+
+```python
+auth = SpotifyOAuth(
+    client_id="ISI_CLIENT_ID_KAMU",
+    client_secret="ISI_CLIENT_SECRET_KAMU",
+    redirect_uri="http://127.0.0.1:8888/callback",
+    scope="playlist-modify-public user-library-read user-library-modify"
+)
+```
+
+Tanpa ini, script tidak akan bisa mengakses akun Spotify kamu.
 
 ---
 
@@ -39,21 +101,23 @@ Migrasi semua lagu dari Apple Music ke Spotify *tanpa third-party tool* seperti 
 
 ```
 project-folder/
-├── migrator.py
-├── playlist.txt         # daftar lagu dari Apple Music
-├── gagal.txt            # lagu yang tidak ditemukan di Spotify
-└── skipped.txt          # lagu yang sudah ada di Liked Songs
+├── initpyenv.sh
+├── playlisttotxt.py        # parser XML ke txt
+├── migrator.py             # transfer ke Spotify
+├── playlist.txt            # output dari playlisttotxt.py
+├── gagal.txt               # lagu yang tidak ditemukan
+└── skipped.txt             # lagu yang sudah ada
 ```
 
 ---
 
-## 🛠️ Script Python (Fitur Lengkap)
+## 🛠️ Fitur Script
 
-* Fuzzy search
-* Auto skip jika lagu sudah ada
-* Retry jika timeout
-* Buka Spotify "Liked Songs" otomatis
-* Logging ke file `gagal.txt` & `skipped.txt`
+* Fuzzy search (mirip-mirip judul tetap ditemukan)
+* Skip otomatis jika lagu sudah ada
+* Retry request jika timeout
+* Logging ke file txt
+* Otomatis buka "Liked Songs" setelah selesai
 
 ---
 
@@ -67,15 +131,14 @@ project-folder/
 403 Client Error: Forbidden for url: https://api.spotify.com/v1/me/tracks/contains
 ```
 
-**Penyebab:** Scope `user-library-read` dan `user-library-modify` tidak diset.
-
 **Solusi:**
+Set scope lengkap:
 
 ```python
 scope="playlist-modify-public user-library-read user-library-modify"
 ```
 
-Hapus `.cache` file agar login ulang dengan scope baru:
+Lalu hapus `.cache*` agar login ulang:
 
 ```bash
 rm .cache*
@@ -88,62 +151,53 @@ rm .cache*
 **Masalah:**
 
 ```
-HTTPSConnectionPool(host='api.spotify.com', port=443): Read timed out. (read timeout=5)
+Read timed out. (read timeout=5)
 ```
 
 **Solusi:**
-Tambahkan timeout lebih besar di Spotipy:
 
-```python
-spotipy.Spotify(auth_manager=auth, requests_timeout=15)
-```
-
-Tambahkan `time.sleep(0.5)` antar request + retry 3x:
-
-```python
-for attempt in range(3):
-    try:
-        result = sp.search(...)
-        break
-    except:
-        time.sleep(2)
-```
+* Set `requests_timeout=15`
+* Tambah `time.sleep(0.5)` antar request
+* Retry pencarian lagu hingga 3x jika gagal
 
 ---
 
 ### 3. **Playlist kosong di Spotify**
 
-**Masalah:** Playlist berhasil dibuat tapi lagu tidak muncul.
-**Penyebab:** Script default menambahkan lagu ke playlist, bukan ke "Liked Songs".
-
-**Solusi:** Ubah script agar langsung tambahkan ke `Liked Songs`:
+**Masalah:** Playlist terlihat kosong padahal sudah berhasil diproses
+**Solusi:** Pastikan `migrator.py` menggunakan:
 
 ```python
 sp.current_user_saved_tracks_add([track_id])
 ```
 
+Script tidak membuat playlist baru, tapi langsung menambahkan ke "Liked Songs"
+
 ---
 
 ## ✅ Output Akhir
 
-* Lagu dari `playlist.txt` ditransfer ke "Liked Songs"
-* Lagu yang gagal → `gagal.txt`
-* Lagu yang sudah ada → `skipped.txt`
-* Browser otomatis buka Spotify "Liked Songs"
+* Lagu dari Apple Music berhasil dipindahkan ke "Liked Songs"
+* Log lagu gagal → `gagal.txt`
+* Log lagu yang sudah ada → `skipped.txt`
+* Spotify "Liked Songs" terbuka otomatis
 
 ---
 
-## ✨ Improvement ke Depan
+## ✨ Rencana Pengembangan
 
-* Auto parse langsung dari XML Apple Music
-* GUI drag-n-drop
-* Export hasil ke CSV/Excel
-* Mode dry-run
+* Auto-parse XML tanpa export manual
+* GUI drag-n-drop playlist
+* Export log ke CSV
+* Mode preview/dry-run sebelum transfer
 
 ---
 
 ## 🤝 Kontribusi
 
-Script & proses ini dikembangkan dari pengalaman langsung oleh Rivaldi selama migrasi 700+ lagu dari Apple Music ke Spotify secara manual.
+Karena saya tipe orang yang suka gonta-ganti layanan streaming musik dan capek mindahin lagu manual satu per satu, akhirnya saya buat sendiri solusi otomatisasi ini. Prosesnya dirancang fleksibel dan bisa dipakai lagi kapan pun, dengan 3 komponen utama:
 
-Kalau kamu ingin script-nya, tinggal DM atau comment di blog ini ya!
+* `initpyenv.sh`
+* `playlisttotxt.py`
+* `migrator.py`
+
