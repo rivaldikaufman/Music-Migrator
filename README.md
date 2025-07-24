@@ -1,5 +1,4 @@
-# Migrasi Playlist Apple Music ke Spotify: Panduan Lengkap + Solusi Bug
-
+# Migrasi Playlist Apple Music ke Spotify
 Ditulis oleh: **Rivaldi**
 Terakhir diperbarui: 2025-07-24
 
