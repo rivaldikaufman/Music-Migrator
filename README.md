@@ -1,5 +1,4 @@
-# Migrasi Playlist Apple Music ke Spotify: Panduan Lengkap + Solusi Bug
-
+# Migrasi Playlist Apple Music ke Spotify
 Ditulis oleh: **Rivaldi**
 Terakhir diperbarui: 2025-07-24
 
@@ -113,24 +112,24 @@ Tanpa ini, script tidak akan bisa mengakses akun Spotify kamu.
 ## 📂 Struktur File
 
 ```
-project-folder/
+Music-Migrator/
 ├── initpyenv.sh
 ├── playlisttotxt.py        # parser XML ke txt
-├── migrator.py             # transfer ke Spotify
+├── migrator.py             # Scrap data playlist.txt dan transfer list lagunya ke Spotify
 ├── playlist.txt            # output dari playlisttotxt.py
-├── gagal.txt               # lagu yang tidak ditemukan
-└── skipped.txt             # lagu yang sudah ada
+├── gagal.txt               # lagu yang gagal dipindahkan saat proses migrasi
+└── skipped.txt             # lagu yang sudah ada di library spotify
 ```
 
 ---
 
 ## 🛠️ Fitur Script
 
-* Fuzzy search (mirip-mirip judul tetap ditemukan)
+* Fuzzy search (pencarian berdasarkan kemiripan kata atau ejaan)
 * Skip otomatis jika lagu sudah ada
 * Retry request jika timeout
 * Logging ke file txt
-* Otomatis buka "Liked Songs" setelah selesai
+* Otomatis buka spotify ke playlist "Liked Songs" setelah selesai migrasi
 
 ---
 
@@ -190,10 +189,10 @@ Script tidak membuat playlist baru, tapi langsung menambahkan ke "Liked Songs"
 
 ## ✅ Output Akhir
 
-* Lagu dari Apple Music berhasil dipindahkan ke "Liked Songs"
+* Lagu dari Apple Music berhasil dipindahkan ke "Liked Songs" di Spotify
 * Log lagu gagal → `gagal.txt`
 * Log lagu yang sudah ada → `skipped.txt`
-* Spotify "Liked Songs" terbuka otomatis
+* Spotify "Liked Songs" terbuka otomatis di browser
 
 ---
 
