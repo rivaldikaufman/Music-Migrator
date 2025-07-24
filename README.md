@@ -13,6 +13,15 @@ Migrasi semua lagu dari Apple Music ke Spotify *tanpa third-party tool* seperti 
 
 ## 📦 Tools & Library
 
+<p align="left">
+  <img src="https://img.shields.io/badge/Python-3.13-blue?logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Spotipy-Library-green?logo=spotify&logoColor=white" alt="Spotipy" />
+  <img src="https://img.shields.io/badge/Apple%20Music-XML-red?logo=apple&logoColor=white" alt="Apple Music" />
+  <img src="https://img.shields.io/badge/Spotify-API-1DB954?logo=spotify&logoColor=white" alt="Spotify API" />
+  <img src="https://img.shields.io/badge/Bash-initpyenv.sh-black?logo=gnubash&logoColor=white" alt="Bash" />
+</p>
+
+
 * Python 3.13 (gunakan virtual environment)
 * [Spotipy](https://spotipy.readthedocs.io/) (library Spotify Web API)
 * Apple Music (playlist diekspor manual)
