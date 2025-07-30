@@ -1,20 +1,20 @@
-# Migrasi Playlist Apple Music ke Spotify
-Ditulis oleh: **Rivaldi**
-Terakhir diperbarui: 2025-07-24
+# Migrating Apple Music Playlists to Spotify
+Written by: **Rivaldi**
+Last updated: 2025-07-24
 
 ---
 
-## 🔥 Tujuan
+## 🔥 Purpose
 
 <p align="center">
   <img src="SCREENSHOTS/MIGRATOR.jpeg" alt="Migrator Preview" width="600"/>
 </p>
 
-Migrasi semua lagu dari Apple Music ke Spotify *tanpa third-party tool* seperti SongShift. Cukup dengan Python dan API Spotify.
+Migrate all songs from Apple Music to Spotify *without third-party tools* like SongShift. Just Python and the Spotify API.
 
 ---
 
-## 📦 Tools & Library
+## 📦 Tools & Libraries
 
 <p align="left">
   <img src="https://img.shields.io/badge/Python-3.13-blue?logo=python&logoColor=white" alt="Python" />
@@ -24,40 +24,39 @@ Migrasi semua lagu dari Apple Music ke Spotify *tanpa third-party tool* seperti 
   <img src="https://img.shields.io/badge/Bash-initpyenv.sh-black?logo=gnubash&logoColor=white" alt="Bash" />
 </p>
 
-
-* Python 3.13 (gunakan virtual environment)
-* [Spotipy](https://spotipy.readthedocs.io/) (library Spotify Web API)
-* Apple Music (playlist diekspor manual)
-* `playlisttotxt.py` untuk parsing XML Apple Music
-* `migrator.py` untuk transfer lagu ke Spotify
+* Python 3.13 (use virtual environment)
+* [Spotipy](https://spotipy.readthedocs.io/) (Spotify Web API library)
+* Apple Music (manually exported playlists)
+* `playlisttotxt.py` to parse Apple Music XML
+* `migrator.py` to transfer songs to Spotify
 
 ---
 
-## 🧰 Setup Awal dengan `initpyenv.sh`
+## 🧰 Initial Setup with `initpyenv.sh`
 
-Jalankan script berikut untuk setup environment otomatis:
+Run the following script to automatically set up the environment:
 
 ```bash
 chmod +x initpyenv.sh
 ./initpyenv.sh
 ```
 
-Script ini akan:
+This script will:
 
-* Membuat virtual environment
-* Install dependensi: `spotipy`, `requests`
-* Aktifkan environment otomatis
+* Create a virtual environment
+* Install dependencies: `spotipy`, `requests`
+* Automatically activate the environment
 
 ---
 
-## 🧠 Alur Migrasi
+## 🧠 Migration Workflow
 
-1. **Ekspor Playlist Apple Music (Mac):**
+1. **Export Apple Music Playlist (Mac):**
 
-   * Buka `Music.app`
-   * Klik playlist → File > Library > Export Playlist → pilih XML
+   * Open `Music.app`
+   * Click playlist → File > Library > Export Playlist → choose XML
 
-2. **Jalankan `playlisttotxt.py`:**
+2. **Run `playlisttotxt.py`:**
 
    ```bash
    python3 playlisttotxt.py path/to/exported_playlist.xml
@@ -65,92 +64,92 @@ Script ini akan:
 
    Output: `playlist.txt`
 
-3. **Jalankan `migrator.py` untuk transfer lagu ke Spotify**
+3. **Run `migrator.py` to transfer songs to Spotify**
 
    ```bash
    python3 migrator.py
    ```
 
-   Script akan:
+   The script will:
 
-   * Tambahkan lagu ke "Liked Songs"
-   * Lewati lagu yang sudah ada
-   * Catat lagu gagal di `gagal.txt`
-   * Catat yang sudah ada di `skipped.txt`
+   * Add songs to "Liked Songs"
+   * Skip songs that are already added
+   * Log failed songs in `gagal.txt`
+   * Log existing songs in `skipped.txt`
 
 ---
 
-## 🎫 Tentang Spotify Client ID & Secret
+## 🎫 About Spotify Client ID & Secret
 
-Untuk menggunakan script ini, kamu **wajib memiliki akses ke Spotify Developer Console** agar bisa menggunakan API mereka.
+To use this script, you **must have access to the Spotify Developer Console** to use their API.
 
-Langkahnya:
+Steps:
 
-1. Kunjungi: [https://developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
-2. Login dengan akun Spotify kamu
-3. Klik **Create App** → beri nama dan deskripsi
-4. Setelah dibuat, kamu akan mendapatkan:
+1. Visit: [https://developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)
+2. Log in with your Spotify account
+3. Click **Create App** → enter name and description
+4. Once created, you’ll get:
 
    * **Client ID**
    * **Client Secret**
 
-⚠️ **Masukkan kedua nilai tersebut ke dalam file `migrator.py` secara manual**:
+⚠️ **Insert both values manually into `migrator.py`**:
 
 ```python
 auth = SpotifyOAuth(
-    client_id="ISI_CLIENT_ID_KAMU",
-    client_secret="ISI_CLIENT_SECRET_KAMU",
+    client_id="YOUR_CLIENT_ID",
+    client_secret="YOUR_CLIENT_SECRET",
     redirect_uri="http://127.0.0.1:8888/callback",
     scope="playlist-modify-public user-library-read user-library-modify"
 )
 ```
 
-Tanpa ini, script tidak akan bisa mengakses akun Spotify kamu.
+Without this, the script won’t be able to access your Spotify account.
 
 ---
 
-## 📂 Struktur File
+## 📂 File Structure
 
 ```
 Music-Migrator/
 ├── initpyenv.sh
-├── playlisttotxt.py        # parser XML ke txt
-├── migrator.py             # Scrap data playlist.txt dan transfer list lagunya ke Spotify
-├── playlist.txt            # output dari playlisttotxt.py
-├── gagal.txt               # lagu yang gagal dipindahkan saat proses migrasi
-└── skipped.txt             # lagu yang sudah ada di library spotify
+├── playlisttotxt.py        # parses XML to txt
+├── migrator.py             # reads playlist.txt and transfers the songs to Spotify
+├── playlist.txt            # output from playlisttotxt.py
+├── gagal.txt               # songs that failed to transfer
+└── skipped.txt             # songs already in your Spotify library
 ```
 
 ---
 
-## 🛠️ Fitur Script
+## 🛠️ Script Features
 
-* Fuzzy search (pencarian berdasarkan kemiripan kata atau ejaan)
-* Skip otomatis jika lagu sudah ada
-* Retry request jika timeout
-* Logging ke file txt
-* Otomatis buka spotify ke playlist "Liked Songs" setelah selesai migrasi
+* Fuzzy search (matches based on similarity or typos)
+* Auto-skip if song already exists
+* Retry request on timeout
+* Logging to txt files
+* Auto-opens Spotify "Liked Songs" after migration
 
 ---
 
-## 🪲 Bug & Solusi
+## 🪲 Bugs & Solutions
 
 ### 1. **403: Insufficient client scope**
 
-**Masalah:**
+**Issue:**
 
 ```
 403 Client Error: Forbidden for url: https://api.spotify.com/v1/me/tracks/contains
 ```
 
-**Solusi:**
-Set scope lengkap:
+**Solution:**
+Ensure full scope is set:
 
 ```python
 scope="playlist-modify-public user-library-read user-library-modify"
 ```
 
-Lalu hapus `.cache*` agar login ulang:
+Then remove `.cache*` to re-login:
 
 ```bash
 rm .cache*
@@ -160,56 +159,55 @@ rm .cache*
 
 ### 2. **Request timeout (ReadTimeoutError)**
 
-**Masalah:**
+**Issue:**
 
 ```
 Read timed out. (read timeout=5)
 ```
 
-**Solusi:**
+**Solution:**
 
 * Set `requests_timeout=15`
-* Tambah `time.sleep(0.5)` antar request
-* Retry pencarian lagu hingga 3x jika gagal
+* Add `time.sleep(0.5)` between requests
+* Retry song search up to 3 times if failed
 
 ---
 
-### 3. **Playlist kosong di Spotify**
+### 3. **Playlist appears empty on Spotify**
 
-**Masalah:** Playlist terlihat kosong padahal sudah berhasil diproses
-**Solusi:** Pastikan `migrator.py` menggunakan:
+**Issue:** Playlist seems empty even though it was processed successfully  
+**Solution:** Ensure `migrator.py` uses:
 
 ```python
 sp.current_user_saved_tracks_add([track_id])
 ```
 
-Script tidak membuat playlist baru, tapi langsung menambahkan ke "Liked Songs"
+The script doesn't create a new playlist, it adds songs directly to "Liked Songs"
 
 ---
 
-## ✅ Output Akhir
+## ✅ Final Output
 
-* Lagu dari Apple Music berhasil dipindahkan ke "Liked Songs" di Spotify
-* Log lagu gagal → `gagal.txt`
-* Log lagu yang sudah ada → `skipped.txt`
-* Spotify "Liked Songs" terbuka otomatis di browser
-
----
-
-## ✨ Rencana Pengembangan
-
-* Auto-parse XML tanpa export manual
-* GUI drag-n-drop playlist
-* Export log ke CSV
-* Mode preview/dry-run sebelum transfer
+* Songs from Apple Music successfully added to "Liked Songs" in Spotify
+* Failed songs → `gagal.txt`
+* Skipped songs → `skipped.txt`
+* Spotify "Liked Songs" opens automatically in browser
 
 ---
 
-## 🤝 Kontribusi
+## ✨ Development Roadmap
 
-Karena saya tipe orang yang suka gonta-ganti layanan streaming musik dan capek mindahin lagu manual satu per satu, akhirnya saya buat sendiri solusi otomatisasi ini. Prosesnya dirancang fleksibel dan bisa dipakai lagi kapan pun, dengan 3 komponen utama:
+* Auto-parse XML without manual export
+* GUI with drag-and-drop playlist
+* Export logs to CSV
+* Preview/dry-run mode before transfer
+
+---
+
+## 🤝 Contribution
+
+Since I'm the type of person who often switches between music streaming services and gets tired of transferring songs manually one by one, I finally created my own automation solution. The process is designed to be flexible and reusable anytime, with three main components:
 
 * `initpyenv.sh`
 * `playlisttotxt.py`
 * `migrator.py`
-
